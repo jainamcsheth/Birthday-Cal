@@ -70,7 +70,8 @@ var app = function () {
       birthdate.setYear(yearInput);
       const day = weekday[birthdate.getDay()];
       const initials = getInitials(birthData.name);
-      calendar[day].push(initials);
+      const age = calculateAge(new Date(birthData.birthday.split('/')), yearInput);
+      calendar[day].push({ initials, age });
     });
   }
 
@@ -87,16 +88,25 @@ var app = function () {
         calendarBox.insertAdjacentHTML('beforeend', toBeAppended);
       }
 
-      calendar[day].forEach((initials, index) => {
+      calendar[day].sort((a, b) => a.age - b.age);
+
+      calendar[day].forEach((data, index) => {
         let style = `background-color: ${colors[currentColorIndex]};`;
         style += (sizeClass === 'card-size-3' && (index + 1) % 3 === 0) ? ' flex: 1;' : '';
         const toBeAppended = `
-          <div class="card ${sizeClass}" style="${style}">${initials}</div>        
+          <div class="card ${sizeClass}" style="${style}">${data.initials}</div>        
         `;
         calendarBox.insertAdjacentHTML('beforeend', toBeAppended);
         currentColorIndex = currentColorIndex === colors.length - 1 ? 0 : ++currentColorIndex;
       });
     }
+  }
+
+  function calculateAge(birthdate, yearInput) {
+    var diffInMS = new Date(yearInput, 11, 31) - birthdate.getTime();
+    var newAgeDt = new Date(diffInMS);
+
+    return Math.abs(newAgeDt.getUTCFullYear() - 1970);
   }
 
   function validateForm(birthData, yearInput) {
@@ -120,7 +130,6 @@ var app = function () {
 
   function setError(error) {
     var errorBlock = document.getElementById('error');
-    // errorBlock.innerHTML = error;
     const toBeAppended = `<div>${error}</div>`
     errorBlock.insertAdjacentHTML('beforeend', toBeAppended);
   }
